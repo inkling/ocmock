@@ -81,6 +81,7 @@ static NSMutableDictionary *mockTable;
     
 	IMP forwarderImp = [metaClass instanceMethodForSelector:@selector(aMethodThatMustNotExist)];
 	IMP originalImp = class_replaceMethod(metaClass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
+#pragma unused (originalImp)
     
 //	SEL aliasSelector = NSSelectorFromString([OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(selector)]);
 //	class_addMethod(subclass, aliasSelector, originalImp, method_getTypeEncoding(originalMethod));
