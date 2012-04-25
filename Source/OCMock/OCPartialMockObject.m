@@ -111,10 +111,13 @@ static NSMutableDictionary *mockTable;
 
     // We must add an implementation of selector to our subclass
     // which will be called before the super (normal) class.
-    // By using _objc_msgForward, we cause messages to be routed 
+    // By using _objc_msgForward(_stret), we cause messages to be routed 
     // to forwardInvocation: (and thus forwardInvocationForRealObject:, 
     // from above) with a nicely packaged invocation.
-	IMP forwarderImp = (IMP)_objc_msgForward;
+    char *methodReturnType = method_copyReturnType(originalMethod);
+    BOOL methodReturnsStruct = (methodReturnType && (strlen(methodReturnType) > 0) && methodReturnType[0] == '{');
+    free(methodReturnType);
+    IMP forwarderImp = (methodReturnsStruct ? (IMP)_objc_msgForward_stret : (IMP)_objc_msgForward);
 	class_addMethod(subclass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
 
 	SEL aliasSelector = NSSelectorFromString([OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(selector)]);

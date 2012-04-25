@@ -725,6 +725,22 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertEqualObjects(@"TestFoo", [realObject method1], @"Should have stubbed method.");
 }
 
+#if TARGET_OS_IPHONE
+- (void)testStubsMethodOnRealObjectReferenceReturningStruct
+{
+    UIScreen *mainScreen = [UIScreen mainScreen];
+    mock = [OCMockObject partialMockForObject:mainScreen];
+    CGRect desiredBounds = (CGRect){0.0f,0.0f,320.0f,480.0f};
+    [(UIScreen *)[[mock stub] andReturnValue:OCMOCK_VALUE(desiredBounds)] bounds];
+    
+    CGRect expectedBounds = desiredBounds;
+    CGRect bounds = [mainScreen bounds];
+    STAssertTrue(CGRectEqualToRect(bounds, expectedBounds),@"Should have returned stubbed value.");
+    
+    [mock stopMocking];
+}
+#endif
+
 - (void)testRestoresObjectWhenStopped
 {
 	TestClassThatCallsSelf *realObject = [[[TestClassThatCallsSelf alloc] init] autorelease];
