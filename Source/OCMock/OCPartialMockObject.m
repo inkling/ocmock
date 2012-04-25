@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------------------
 
 #import <objc/runtime.h>
+#import <objc/message.h>
 #import "OCPartialMockRecorder.h"
 #import "OCPartialMockObject.h"
 
@@ -108,7 +109,12 @@ static NSMutableDictionary *mockTable;
 	Method originalMethod = class_getInstanceMethod([subclass superclass], selector);
 	IMP originalImp = method_getImplementation(originalMethod);
 
-	IMP forwarderImp = [subclass instanceMethodForSelector:@selector(aMethodThatMustNotExist)];
+    // We must add an implementation of selector to our subclass
+    // which will be called before the super (normal) class.
+    // By using _objc_msgForward, we cause messages to be routed 
+    // to forwardInvocation: (and thus forwardInvocationForRealObject:, 
+    // from above) with a nicely packaged invocation.
+	IMP forwarderImp = (IMP)_objc_msgForward;
 	class_addMethod(subclass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
 
 	SEL aliasSelector = NSSelectorFromString([OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(selector)]);
