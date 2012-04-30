@@ -16,6 +16,7 @@
 }
 
 + (id)mockForClass:(Class)aClass;
++ (id)mockForClassObject:(Class)aClass;
 + (id)mockForProtocol:(Protocol *)aProtocol;
 + (id)partialMockForObject:(NSObject *)anObject;
 // note: there may only exist one partial class object mock
@@ -23,6 +24,7 @@
 + (id)partialMockForClassObject:(Class)aClass;
 
 + (id)niceMockForClass:(Class)aClass;
++ (id)niceMockForClassObject:(Class)aClass;
 + (id)niceMockForProtocol:(Protocol *)aProtocol;
 
 + (id)observerMock;

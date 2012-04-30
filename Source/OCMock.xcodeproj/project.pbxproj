@@ -128,6 +128,10 @@
 		F04D5FF81547E227009D1CBF /* NSInvocationOCMAdditionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 03B3161F1463350E0052CD09 /* NSInvocationOCMAdditionsTests.m */; };
 		F04D60051547E5AF009D1CBF /* libOCMock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 030EF0DC14632FF700B04273 /* libOCMock.a */; };
 		F04D60071547E770009D1CBF /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F04D60061547E770009D1CBF /* CoreGraphics.framework */; };
+		F081270E154F3EEF0083FD1A /* OCMockClassObject.h in Headers */ = {isa = PBXBuildFile; fileRef = F081270C154F3EEF0083FD1A /* OCMockClassObject.h */; };
+		F081270F154F3EEF0083FD1A /* OCMockClassObject.h in Headers */ = {isa = PBXBuildFile; fileRef = F081270C154F3EEF0083FD1A /* OCMockClassObject.h */; };
+		F0812710154F3EEF0083FD1A /* OCMockClassObject.m in Sources */ = {isa = PBXBuildFile; fileRef = F081270D154F3EEF0083FD1A /* OCMockClassObject.m */; };
+		F0812711154F3EEF0083FD1A /* OCMockClassObject.m in Sources */ = {isa = PBXBuildFile; fileRef = F081270D154F3EEF0083FD1A /* OCMockClassObject.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -222,6 +226,8 @@
 		F04D5FEE1547E14D009D1CBF /* OCMockTestsTouch-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OCMockTestsTouch-Prefix.pch"; sourceTree = "<group>"; };
 		F04D60061547E770009D1CBF /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		F08126FC154F07350083FD1A /* OCPartialMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCPartialMock.h; sourceTree = "<group>"; };
+		F081270C154F3EEF0083FD1A /* OCMockClassObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMockClassObject.h; sourceTree = "<group>"; };
+		F081270D154F3EEF0083FD1A /* OCMockClassObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OCMockClassObject.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -396,6 +402,8 @@
 				03B3159E146333BF0052CD09 /* OCMockObject.m */,
 				03B3158B146333BF0052CD09 /* OCClassMockObject.h */,
 				03B3158C146333BF0052CD09 /* OCClassMockObject.m */,
+				F081270C154F3EEF0083FD1A /* OCMockClassObject.h */,
+				F081270D154F3EEF0083FD1A /* OCMockClassObject.m */,
 				03B315AD146333BF0052CD09 /* OCProtocolMockObject.h */,
 				03B315AE146333BF0052CD09 /* OCProtocolMockObject.m */,
 				03B3159F146333BF0052CD09 /* OCMockRecorder.h */,
@@ -546,6 +554,7 @@
 				03B3160E146333C00052CD09 /* OCPartialMockRecorder.h in Headers */,
 				03B31613146333C00052CD09 /* OCProtocolMockObject.h in Headers */,
 				03E6F058152FA60B0079EAF7 /* OCPartialMockClassObject.h in Headers */,
+				F081270E154F3EEF0083FD1A /* OCMockClassObject.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -582,6 +591,7 @@
 				03B3163F1463350E0052CD09 /* OCMockRecorderTests.h in Headers */,
 				03B316441463350E0052CD09 /* OCObserverMockObjectTests.h in Headers */,
 				03E6F059152FA60B0079EAF7 /* OCPartialMockClassObject.h in Headers */,
+				F081270F154F3EEF0083FD1A /* OCMockClassObject.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -786,6 +796,7 @@
 				03B31610146333C00052CD09 /* OCPartialMockRecorder.m in Sources */,
 				03B31615146333C00052CD09 /* OCProtocolMockObject.m in Sources */,
 				03E6F05A152FA60B0079EAF7 /* OCPartialMockClassObject.m in Sources */,
+				F0812710154F3EEF0083FD1A /* OCMockClassObject.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -828,6 +839,7 @@
 				03B31612146333C00052CD09 /* OCPartialMockRecorder.m in Sources */,
 				03B31617146333C00052CD09 /* OCProtocolMockObject.m in Sources */,
 				03E6F05B152FA60B0079EAF7 /* OCPartialMockClassObject.m in Sources */,
+				F0812711154F3EEF0083FD1A /* OCMockClassObject.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

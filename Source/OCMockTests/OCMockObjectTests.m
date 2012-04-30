@@ -849,6 +849,64 @@ static NSString *TestNotification = @"TestNotification";
 //	class object mocks allow stubbing/expecting on class objects
 // --------------------------------------------------------------------------------------
 
+- (void)testClassObjectMockAcceptsStubbedMethod
+{
+    mock = [OCMockObject mockForClassObject:[TestClassWithClassMethod class]];
+	[[mock stub] method1];
+	[mock method1];
+}
+
+- (void)testClassObjectMockRaisesExceptionWhenUnknownMethodIsCalled
+{
+    mock = [OCMockObject mockForClassObject:[TestClassWithClassMethod class]];
+	[[mock stub] method1];
+	STAssertThrows([mock method2], @"Should have raised an exception.");
+}
+
+- (void)testClassObjectMockAcceptsExpectedMethod
+{
+    mock = [OCMockObject mockForClassObject:[TestClassWithClassMethod class]];
+	[[mock expect] method1];
+	[mock method1];
+}
+
+- (void)testClassObjectMockAcceptsExpectedMethodAndReturnsValue
+{
+	id returnValue;
+    
+    mock = [OCMockObject mockForClassObject:[TestClassWithClassMethod class]];
+	[[[mock expect] andReturn:@"Objective-C"] method1];
+	returnValue = [mock method1];
+    
+	STAssertEqualObjects(@"Objective-C", returnValue, @"Should have returned stubbed value.");
+}
+
+- (void)testClassObjectMockAcceptsAndVerifiesExpectedMethods
+{
+    mock = [OCMockObject mockForClassObject:[TestClassWithClassMethod class]];
+	[[mock expect] method1];
+	[[mock expect] method2];
+	
+	[mock method1];
+	[mock method2];
+	
+	[mock verify];
+}
+
+- (void)testMockReturnsDefaultValueWhenUnknownMethodIsCalledOnNiceClassObjectMock
+{
+	mock = [OCMockObject niceMockForClassObject:[TestClassWithClassMethod class]];
+	STAssertNil([mock method1], @"Should return nil on unexpected method call (for nice mock).");	
+	[mock verify];
+}
+
+- (void)testMockRaisesAnExceptionWhenAnExpectedMethodIsNotCalledOnNiceClassObjectMock
+{
+	mock = [OCMockObject niceMockForClassObject:[TestClassWithClassMethod class]];
+	[[[mock expect] andReturn:@"HELLO!"] method1];
+	STAssertThrows([mock verify], @"Should have raised an exception because method was not called.");
+}
+
 // --------------------------------------------------------------------------------------
 //	mocks should honour the NSObject contract, etc.
 // --------------------------------------------------------------------------------------
