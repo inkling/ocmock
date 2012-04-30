@@ -84,7 +84,13 @@ static NSMutableDictionary *mockTable;
 	Method originalMethod = class_getClassMethod(mockedClass, selector);
     Class metaClass = objc_getMetaClass(class_getName(mockedClass));
     
-	IMP forwarderImp = [metaClass instanceMethodForSelector:@selector(aMethodThatMustNotExist)];
+    // We must wish to handle invocations of selector ourselves,
+    // which we do by replacing the originalMethod's implementation
+    // with the runtime forwarding function _objc_msgForward(_stret).
+    char *methodReturnType = method_copyReturnType(originalMethod);
+    BOOL methodReturnsStruct = (methodReturnType && (strlen(methodReturnType) > 0) && methodReturnType[0] == '{');
+    free(methodReturnType);
+    IMP forwarderImp = (methodReturnsStruct ? (IMP)_objc_msgForward_stret : (IMP)_objc_msgForward);
 	IMP originalImp = class_replaceMethod(metaClass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
 #pragma unused (originalImp)
     
