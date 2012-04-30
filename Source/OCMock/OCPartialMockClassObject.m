@@ -48,9 +48,8 @@ static NSMutableDictionary *mockTable;
 
 - (id)initWithClass:(Class)aClass
 {
-	[super init];
-	mockedClass = aClass;
-	[[self class] rememberMock:self forClass:aClass];
+	[super initWithClass:aClass];
+    [[self class] rememberMock:self forClass:aClass];
     [self setupClass:aClass];
 	return self;
 }
@@ -65,11 +64,6 @@ static NSMutableDictionary *mockTable;
 - (NSString *)description
 {
 	return [NSString stringWithFormat:@"OCPartialMockClassObject[%@]", NSStringFromClass(mockedClass)];
-}
-
-- (Class)mockedClass
-{
-	return mockedClass;
 }
 
 - (id)realObject {
@@ -145,19 +139,6 @@ static NSMutableDictionary *mockTable;
 	if([mock handleInvocation:anInvocation] == NO)
 		[NSException raise:NSInternalInconsistencyException format:@"Ended up in forwarder for %@ with unstubbed method %@",
 		 [self class], NSStringFromSelector([anInvocation selector])];
-}
-
-
-#pragma mark  Proxy API
-
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
-{
-	return [mockedClass methodSignatureForSelector:aSelector];
-}
-
-- (BOOL)respondsToSelector:(SEL)selector
-{
-    return [mockedClass respondsToSelector:selector];
 }
 
 
