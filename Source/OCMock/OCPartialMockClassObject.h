@@ -5,7 +5,10 @@
 
 #import <OCMock/OCMockObject.h>
 
-@interface OCMockClassObject : OCMockObject
+#import "OCPartialMock.h"
+
+
+@interface OCPartialMockClassObject : OCMockObject <OCPartialMock>
 {
 	Class	mockedClass;
 }
@@ -15,6 +18,5 @@
 - (Class)mockedClass;
 
 - (void)setupClass:(Class)aClass;
-- (void)setupForwarderForSelector:(SEL)selector;
 
 @end

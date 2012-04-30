@@ -3,7 +3,7 @@
 //  Copyright (c) 2009-2010 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
-#import "OCPartialMockObject.h"
+#import "OCPartialMock.h"
 #import "OCMRealObjectForwarder.h"
 #import "OCPartialMockRecorder.h"
 
@@ -21,7 +21,7 @@
 {
 	[super forwardInvocation:anInvocation];
 	// not as clean as I'd wish...
-	[(OCPartialMockObject *)signatureResolver setupForwarderForSelector:[anInvocation selector]];
+	[(id<OCPartialMock>)signatureResolver setupForwarderForSelector:[anInvocation selector]];
 }
 
 @end

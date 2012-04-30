@@ -4,11 +4,12 @@
 //---------------------------------------------------------------------------------------
 
 #import <objc/runtime.h>
-#import "OCClassMockRecorder.h"
-#import "OCMockClassObject.h"
+#import <objc/message.h>
+#import "OCPartialMockRecorder.h"
+#import "OCPartialMockClassObject.h"
 
 
-@implementation OCMockClassObject
+@implementation OCPartialMockClassObject
 
 #pragma mark  Mock table
 
@@ -16,11 +17,11 @@ static NSMutableDictionary *mockTable;
 
 + (void)initialize
 {
-	if(self == [OCMockClassObject class])
+	if(self == [OCPartialMockClassObject class])
 		mockTable = [[NSMutableDictionary alloc] init];
 }
 
-+ (void)rememberMock:(OCMockClassObject *)mock forClass:(Class)aClass
++ (void)rememberMock:(OCPartialMockClassObject *)mock forClass:(Class)aClass
 {
 	[mockTable setObject:[NSValue valueWithNonretainedObject:mock] forKey:[NSValue valueWithNonretainedObject:aClass]];
 }
@@ -30,9 +31,9 @@ static NSMutableDictionary *mockTable;
 	[mockTable removeObjectForKey:[NSValue valueWithNonretainedObject:aClass]];
 }
 
-+ (OCMockClassObject *)existingMockForClass:(Class)aClass
++ (OCPartialMockClassObject *)existingMockForClass:(Class)aClass
 {
-	OCMockClassObject *mock = [[mockTable objectForKey:[NSValue valueWithNonretainedObject:aClass]] nonretainedObjectValue];
+	OCPartialMockClassObject *mock = [[mockTable objectForKey:[NSValue valueWithNonretainedObject:aClass]] nonretainedObjectValue];
 	if(mock == nil)
 		[NSException raise:NSInternalInconsistencyException format:@"No mock for class %p", aClass];
 	return mock;
@@ -52,12 +53,16 @@ static NSMutableDictionary *mockTable;
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"OCMockClassObject[%@]", NSStringFromClass(mockedClass)];
+	return [NSString stringWithFormat:@"OCPartialMockClassObject[%@]", NSStringFromClass(mockedClass)];
 }
 
 - (Class)mockedClass
 {
 	return mockedClass;
+}
+
+- (id)realObject {
+    return mockedClass;
 }
 
 - (void)stopMocking
@@ -90,7 +95,7 @@ static NSMutableDictionary *mockTable;
 - (void)forwardInvocationForRealObject:(NSInvocation *)anInvocation
 {
 	// in here "self" is a reference to the real class, not the mock
-	OCMockClassObject *mock = [OCMockClassObject existingMockForClass:(Class)self];
+	OCPartialMockClassObject *mock = [OCPartialMockClassObject existingMockForClass:(Class)self];
 	if([mock handleInvocation:anInvocation] == NO)
 		[NSException raise:NSInternalInconsistencyException format:@"Ended up in subclass forwarder for %@ with unstubbed method %@",
 		 [self class], NSStringFromSelector([anInvocation selector])];
@@ -114,8 +119,11 @@ static NSMutableDictionary *mockTable;
 
 - (id)getNewRecorder
 {
-	return [[[OCClassMockRecorder alloc] initWithSignatureResolver:self] autorelease];
+	return [[[OCPartialMockRecorder alloc] initWithSignatureResolver:self] autorelease];
 }
 
+- (void)handleUnRecordedInvocation:(NSInvocation *)anInvocation {
+    [anInvocation invokeWithTarget:mockedClass];
+}
 
 @end

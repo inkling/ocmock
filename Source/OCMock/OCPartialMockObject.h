@@ -4,22 +4,14 @@
 //---------------------------------------------------------------------------------------
 
 #import "OCClassMockObject.h"
+#import "OCPartialMock.h"
 
-@interface OCPartialMockObject : OCClassMockObject 
+@interface OCPartialMockObject : OCClassMockObject <OCPartialMock>
 {
 	NSObject	*realObject;
 }
 
 - (id)initWithObject:(NSObject *)anObject;
-
-- (NSObject *)realObject;
-
-- (void)stopMocking;
-
 - (void)setupSubclassForObject:(id)anObject;
-- (void)setupForwarderForSelector:(SEL)selector;
 
 @end
-
-
-extern NSString *OCMRealMethodAliasPrefix;

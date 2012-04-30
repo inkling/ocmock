@@ -45,6 +45,7 @@
 @interface TestClassWithClassMethod : NSObject
 
 + (NSString *)method1;
++ (NSString *)method2;
 
 @end
 
@@ -53,6 +54,10 @@
 + (NSString *)method1
 {
     return @"Foo";
+}
+
++ (NSString *)method2 {
+    return [self method1];
 }
 
 @end
@@ -685,7 +690,7 @@ static NSString *TestNotification = @"TestNotification";
 
 
 // --------------------------------------------------------------------------------------
-//	partial mocks forward unknown methods to a real instance
+//	partial mocks forward unknown methods to a real instance or class
 // --------------------------------------------------------------------------------------
 
 - (void)testStubsMethodsOnPartialMock
@@ -696,6 +701,13 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertEqualObjects(@"hi", [mock method1], @"Should have returned stubbed value");
 }
 
+- (void)testStubsMethodOnPartialClassMock
+{
+    mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
+    
+	[[[mock stub] andReturn:@"TestFoo"] method1];
+	STAssertEqualObjects(@"TestFoo", [TestClassWithClassMethod method1], @"Should have stubbed method.");
+}
 
 //- (void)testStubsMethodsOnPartialMockForTollFreeBridgedClasses
 //{
@@ -710,6 +722,14 @@ static NSString *TestNotification = @"TestNotification";
 	mock = [OCMockObject partialMockForObject:foo];
 	STAssertEqualObjects(@"Foo", [mock method2], @"Should have returned value from real object.");
 }
+
+- (void)testForwardsUnstubbedMethodsCallsToRealObjectOnPartialClassMock
+{
+    mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
+    
+	STAssertEqualObjects(@"Foo", [TestClassWithClassMethod method1], @"Should have returned value from real object.");
+}
+
 
 //- (void)testForwardsUnstubbedMethodsCallsToRealObjectOnPartialMockForTollFreeBridgedClasses
 //{
@@ -760,6 +780,13 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertEqualObjects(@"FooFoo", [mock method1], @"Should have called through to stubbed method.");
 }
 
+- (void)testCallsToSelfInClassObjectAreShadowedByClassObjectMock
+{
+    mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
+	[[[mock stub] andReturn:@"TestFoo"] method1];
+	STAssertEqualObjects(@"TestFoo", [TestClassWithClassMethod method2], @"Should called through to stubbed method.");
+}
+
 - (NSString *)differentMethodInDifferentClass
 {
 	return @"swizzled!";
@@ -788,17 +815,10 @@ static NSString *TestNotification = @"TestNotification";
 }
 
 
+
 // --------------------------------------------------------------------------------------
 //	class object mocks allow stubbing/expecting on class objects
 // --------------------------------------------------------------------------------------
-
-- (void)testStubsMethodOnClassObject
-{
-    mock = [OCMockObject mockForClassObject:[TestClassWithClassMethod class]];
-    
-	[[[mock stub] andReturn:@"TestFoo"] method1];
-	STAssertEqualObjects(@"TestFoo", [TestClassWithClassMethod method1], @"Should have stubbed method.");
-}
 
 //- (void)testForwardsUnstubbedMethodsToRealClassObjectAfterStopIsCalled
 //{
@@ -807,7 +827,6 @@ static NSString *TestNotification = @"TestNotification";
 //    [mock stopMocking];
 //	STAssertEqualObjects(@"Foo", [TestClassWithClassMethod method1], @"Should not have stubbed method.");
 //}
-
 
 // --------------------------------------------------------------------------------------
 //	mocks should honour the NSObject contract, etc.

@@ -3,10 +3,18 @@
 //  Copyright (c) 2012 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
-#import "OCMockRecorder.h"
+#import <Foundation/Foundation.h>
 
-@interface OCClassMockRecorder : OCMockRecorder 
-{
-}
+
+static NSString *const OCMRealMethodAliasPrefix = @"ocmock_replaced_";
+
+
+@protocol OCPartialMock <NSObject>
+
+- (id)realObject;
+
+- (void)stopMocking;
+
+- (void)setupForwarderForSelector:(SEL)selector;
 
 @end
