@@ -143,7 +143,7 @@ static NSMutableDictionary *mockTable;
 	// in here "self" is a reference to the real class, not the mock
 	OCPartialMockClassObject *mock = [OCPartialMockClassObject existingMockForClass:(Class)self];
 	if([mock handleInvocation:anInvocation] == NO)
-		[NSException raise:NSInternalInconsistencyException format:@"Ended up in subclass forwarder for %@ with unstubbed method %@",
+		[NSException raise:NSInternalInconsistencyException format:@"Ended up in forwarder for %@ with unstubbed method %@",
 		 [self class], NSStringFromSelector([anInvocation selector])];
 }
 
