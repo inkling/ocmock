@@ -51,6 +51,13 @@ static NSMutableDictionary *mockTable;
 	return self;
 }
 
+- (void)dealloc
+{
+	if(mockedClass != nil)
+		[self stopMocking];
+	[super dealloc];
+}
+
 - (NSString *)description
 {
 	return [NSString stringWithFormat:@"OCPartialMockClassObject[%@]", NSStringFromClass(mockedClass)];
@@ -67,7 +74,33 @@ static NSMutableDictionary *mockTable;
 
 - (void)stopMocking
 {
+    // We set the implementations of all the mocked methods back to the originals.
+    // We detect which methods were mocked, and retrieve the original IMPs,
+    // by looking through the metaClass' methods for names prefixed with our alias.
+    Class metaClass = objc_getMetaClass(class_getName(mockedClass));
+    unsigned int numMethods;
+    Method *methodList = class_copyMethodList(metaClass, &numMethods);
+    for (int methodIndex = 0; methodIndex < numMethods; methodIndex++) {
+        Method method = methodList[methodIndex];
+        SEL methodSelector = method_getName(method);
+        NSString *methodName = NSStringFromSelector(methodSelector);
+        
+        if ([methodName hasPrefix:OCMRealMethodAliasPrefix]) {
+            NSString *mockedMethodName = [methodName substringFromIndex:[OCMRealMethodAliasPrefix length]];
+            SEL mockedMethodSelector = NSSelectorFromString(mockedMethodName);
+            IMP originalImp = method_getImplementation(method);
+            class_replaceMethod(metaClass, mockedMethodSelector, originalImp, method_getTypeEncoding(method));
+        }
+    }
+    free(methodList);
     
+    // Note: The runtime doesn't support us removing the aliased methods 
+    // from the mocked class, so we can't completely clean up here.
+    // But it'll be ok if we mock this class again – 
+    // class_addMethod will just return NO when we try to "re-add" the aliased methods.
+    
+    [[self class] forgetMockForClass:mockedClass];
+    mockedClass = NULL;
 }
 
 - (void)setupClass:(Class)aClass
@@ -92,10 +125,13 @@ static NSMutableDictionary *mockTable;
     free(methodReturnType);
     IMP forwarderImp = (methodReturnsStruct ? (IMP)_objc_msgForward_stret : (IMP)_objc_msgForward);
 	IMP originalImp = class_replaceMethod(metaClass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
-#pragma unused (originalImp)
     
-//	SEL aliasSelector = NSSelectorFromString([OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(selector)]);
-//	class_addMethod(subclass, aliasSelector, originalImp, method_getTypeEncoding(originalMethod));
+    // We add an aliased method to save the original IMP 
+    // so that methods can be forwarded to the class object
+    // and so that we can reset the method's implementation 
+    // when we stop mocking.
+	SEL aliasSelector = NSSelectorFromString([OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(selector)]);
+	class_addMethod(metaClass, aliasSelector, originalImp, method_getTypeEncoding(originalMethod));
 }
 
 - (void)forwardInvocationForRealObject:(NSInvocation *)anInvocation

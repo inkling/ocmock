@@ -432,6 +432,21 @@ static NSString *TestNotification = @"TestNotification";
 	[mock verify];
 }
 
+- (void)testForwardsToRealObjectWhenSetUpAndCalledOnClassMock {
+    mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
+    
+	[[[mock expect] andForwardToRealObject] method1];
+	STAssertEqualObjects(@"Foo", [mock method1], @"Should have called method on real object.");
+    [mock verify];
+}
+
+- (void)testForwardsToRealObjectWhenSetUpAndCalledOnClass {
+    mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
+    
+	[[[mock expect] andForwardToRealObject] method1];
+	STAssertEqualObjects(@"Foo", [TestClassWithClassMethod method1], @"Should have called method on class object.");
+    [mock verify];
+}
 
 // --------------------------------------------------------------------------------------
 //	returning values in pass-by-reference arguments
@@ -771,6 +786,14 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertEqualObjects(@"Foo", [realObject method2], @"Should have 'unstubbed' method.");
 }
 
+- (void)testRestoresClassWhenStopped
+{
+    mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
+	[[[mock stub] andReturn:@"TestFoo"] method1];
+	STAssertEqualObjects(@"TestFoo", [TestClassWithClassMethod method1], @"Should have stubbed method.");
+    [mock stopMocking];
+	STAssertEqualObjects(@"Foo", [TestClassWithClassMethod method1], @"Should not 'unstubbed' method.");
+}
 
 - (void)testCallsToSelfInRealObjectAreShadowedByPartialMock
 {
@@ -819,14 +842,6 @@ static NSString *TestNotification = @"TestNotification";
 // --------------------------------------------------------------------------------------
 //	class object mocks allow stubbing/expecting on class objects
 // --------------------------------------------------------------------------------------
-
-//- (void)testForwardsUnstubbedMethodsToRealClassObjectAfterStopIsCalled
-//{
-//    mock = [OCMockObject mockForClassObject:[TestClassWithClassMethod class]];
-//	[[[mock stub] andReturn:@"TestFoo"] method1];
-//    [mock stopMocking];
-//	STAssertEqualObjects(@"Foo", [TestClassWithClassMethod method1], @"Should not have stubbed method.");
-//}
 
 // --------------------------------------------------------------------------------------
 //	mocks should honour the NSObject contract, etc.
