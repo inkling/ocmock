@@ -724,6 +724,12 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertEqualObjects(@"TestFoo", [TestClassWithClassMethod method1], @"Should have stubbed method.");
 }
 
+- (void)testRaisesAnExceptionWhenTryingToSimultaneouslyMockClassObject
+{
+    mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
+    STAssertThrows([OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]], @"Should have raised an exception.");
+}
+
 //- (void)testStubsMethodsOnPartialMockForTollFreeBridgedClasses
 //{
 //	mock = [OCMockObject partialMockForObject:[NSString stringWithString:@"hello"]];
