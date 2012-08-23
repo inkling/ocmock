@@ -4,7 +4,7 @@
 //---------------------------------------------------------------------------------------
 
 #import <objc/runtime.h>
-#import "OCPartialMockObject.h"
+#import "OCPartialMock.h"
 #import "OCMRealObjectForwarder.h"
 
 
@@ -20,7 +20,7 @@
 	if([invocationTarget isProxy] && (class_getInstanceMethod([invocationTarget class], @selector(realObject)))) 
 	{
 		// the method has been invoked on the mock, we need to change the target to the real object
-		[anInvocation setTarget:[(OCPartialMockObject *)invocationTarget realObject]];
+		[anInvocation setTarget:[(id<OCPartialMock>)invocationTarget realObject]];
 	} 
 	[anInvocation invoke];
 }

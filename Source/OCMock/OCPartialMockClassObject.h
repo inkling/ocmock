@@ -3,15 +3,13 @@
 //  Copyright (c) 2012 by Mulle Kybernetik. See License file for details.
 //---------------------------------------------------------------------------------------
 
-#import "OCMockObject.h"
+#import "OCMockClassObject.h"
 
-@interface OCMockClassObject : OCMockObject 
-{
-    Class	mockedClass;
-}
+#import "OCPartialMock.h"
 
-- (id)initWithClass:(Class)aClass;
 
-- (Class)mockedClass;
+@interface OCPartialMockClassObject : OCMockClassObject <OCPartialMock>
+
+- (void)setupClass:(Class)aClass;
 
 @end

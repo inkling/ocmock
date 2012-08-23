@@ -14,8 +14,6 @@
 @end 
 
 
-NSString *OCMRealMethodAliasPrefix = @"ocmock_replaced_";
-
 @implementation OCPartialMockObject
 
 
@@ -72,7 +70,7 @@ static NSMutableDictionary *mockTable;
 	return [NSString stringWithFormat:@"OCPartialMockObject[%@]", NSStringFromClass(mockedClass)];
 }
 
-- (NSObject *)realObject
+- (id)realObject
 {
 	return realObject;
 }

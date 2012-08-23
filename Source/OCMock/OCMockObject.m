@@ -5,9 +5,10 @@
 
 #import <OCMock/OCMockObject.h>
 #import "OCClassMockObject.h"
+#import "OCMockClassObject.h"
 #import "OCProtocolMockObject.h"
 #import "OCPartialMockObject.h"
-#import "OCMockClassObject.h"
+#import "OCPartialMockClassObject.h"
 #import "OCObserverMockObject.h"
 #import <OCMock/OCMockRecorder.h>
 #import "NSInvocation+OCMAdditions.h"
@@ -38,7 +39,7 @@
 	return [[[OCClassMockObject alloc] initWithClass:aClass] autorelease];
 }
 
-+ (id)mockForClassObject:(Class)aClass;
++ (id)mockForClassObject:(Class)aClass
 {
     return [[[OCMockClassObject alloc] initWithClass:aClass] autorelease];
 }
@@ -53,10 +54,18 @@
 	return [[[OCPartialMockObject alloc] initWithObject:anObject] autorelease];
 }
 
++ (id)partialMockForClassObject:(Class)aClass {
+    return [[[OCPartialMockClassObject alloc] initWithClass:aClass] autorelease];
+}
 
 + (id)niceMockForClass:(Class)aClass
 {
 	return [self _makeNice:[self mockForClass:aClass]];
+}
+
++ (id)niceMockForClassObject:(Class)aClass
+{
+    return [self _makeNice:[self mockForClassObject:aClass]];
 }
 
 + (id)niceMockForProtocol:(Protocol *)aProtocol
