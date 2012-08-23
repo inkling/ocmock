@@ -113,6 +113,7 @@ static NSMutableDictionary *mockTable;
 - (void)setupForwarderForSelector:(SEL)selector
 {
 	Method originalMethod = class_getClassMethod(mockedClass, selector);
+    IMP originalImp = method_getImplementation(originalMethod);
     Class metaClass = objc_getMetaClass(class_getName(mockedClass));
     
     // We must wish to handle invocations of selector ourselves,
@@ -122,7 +123,7 @@ static NSMutableDictionary *mockTable;
     BOOL methodReturnsStruct = (methodReturnType && (strlen(methodReturnType) > 0) && methodReturnType[0] == '{');
     free(methodReturnType);
     IMP forwarderImp = (methodReturnsStruct ? (IMP)_objc_msgForward_stret : (IMP)_objc_msgForward);
-	IMP originalImp = class_replaceMethod(metaClass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
+	class_replaceMethod(metaClass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
     
     // We add an aliased method to save the original IMP 
     // so that methods can be forwarded to the class object
