@@ -798,7 +798,7 @@ static NSString *TestNotification = @"TestNotification";
 	[[[mock stub] andReturn:@"TestFoo"] method1];
 	STAssertEqualObjects(@"TestFoo", [TestClassWithClassMethod method1], @"Should have stubbed method.");
     [mock stopMocking];
-	STAssertEqualObjects(@"Foo", [TestClassWithClassMethod method1], @"Should not 'unstubbed' method.");
+	STAssertEqualObjects(@"Foo", [TestClassWithClassMethod method1], @"Should have 'unstubbed' method.");
 }
 
 - (void)testCallsToSelfInRealObjectAreShadowedByPartialMock
