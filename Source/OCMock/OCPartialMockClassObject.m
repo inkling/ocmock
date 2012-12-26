@@ -25,7 +25,7 @@ static NSMutableDictionary *mockTable;
 {
     OCPartialMockClassObject *existingMock = [[mockTable objectForKey:[NSValue valueWithNonretainedObject:aClass]] nonretainedObjectValue];
     if (existingMock != nil) {
-        [NSException raise:NSInternalInconsistencyException format:@"Class %p is already being mocked.", aClass];
+        [NSException raise:NSInternalInconsistencyException format:@"Class %@ is already being mocked.", NSStringFromClass(aClass)];
     }
 	[mockTable setObject:[NSValue valueWithNonretainedObject:mock] forKey:[NSValue valueWithNonretainedObject:aClass]];
 }
@@ -39,7 +39,7 @@ static NSMutableDictionary *mockTable;
 {
 	OCPartialMockClassObject *mock = [[mockTable objectForKey:[NSValue valueWithNonretainedObject:aClass]] nonretainedObjectValue];
 	if(mock == nil)
-		[NSException raise:NSInternalInconsistencyException format:@"No mock for class %p", aClass];
+		[NSException raise:NSInternalInconsistencyException format:@"No mock for class %@", NSStringFromClass(aClass)];
 	return mock;
 }
 
