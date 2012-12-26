@@ -23,6 +23,19 @@
 // for a given Class at any one time
 + (id)partialMockForClassObject:(Class)aClass;
 
+// Partial class mocks are used to indirectly handle invocations
+// on ALL instances of the mocked Class.
+// They are to be used, instead of partial object mocks,
+// where the identities of individual instances are unknown or unimportant.
+//
+// Partial class mocks may NOT be used directly--as instances of the mocked Class--
+// because there is no single "real object" to which to forward unrecorded
+// and "andForwardToRealObject"-handled invocations from a directly-used mock.
+
+// There may only exist one partial class mock
+// for a given Class at any one time.
++ (id)partialMockForClass:(Class)aClass;
+
 + (id)niceMockForClass:(Class)aClass;
 + (id)niceMockForClassObject:(Class)aClass;
 + (id)niceMockForProtocol:(Protocol *)aProtocol;
