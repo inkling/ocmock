@@ -25,7 +25,7 @@ static NSMutableDictionary *mockTable;
 {
     OCPartialMockClassObject *existingMock = [[mockTable objectForKey:[NSValue valueWithNonretainedObject:aClass]] nonretainedObjectValue];
     if (existingMock != nil) {
-        [NSException raise:NSInternalInconsistencyException format:@"Class %p is already being mocked.", aClass];
+        [NSException raise:NSInternalInconsistencyException format:@"Class %@ is already being mocked.", NSStringFromClass(aClass)];
     }
 	[mockTable setObject:[NSValue valueWithNonretainedObject:mock] forKey:[NSValue valueWithNonretainedObject:aClass]];
 }
@@ -39,7 +39,7 @@ static NSMutableDictionary *mockTable;
 {
 	OCPartialMockClassObject *mock = [[mockTable objectForKey:[NSValue valueWithNonretainedObject:aClass]] nonretainedObjectValue];
 	if(mock == nil)
-		[NSException raise:NSInternalInconsistencyException format:@"No mock for class %p", aClass];
+		[NSException raise:NSInternalInconsistencyException format:@"No mock for class %@", NSStringFromClass(aClass)];
 	return mock;
 }
 
@@ -101,13 +101,26 @@ static NSMutableDictionary *mockTable;
     mockedClass = NULL;
 }
 
+// Route forwardInvocation: to ourselves so we get a chance
+// to handle recorded invocations on the mocked class.
 - (void)setupClass:(Class)aClass
 {
+    SEL forwardInvocationSel = @selector(forwardInvocation:);
+    Method originalForwardInvocationMethod = class_getInstanceMethod(aClass, forwardInvocationSel);
+    IMP originalForwardInvocationImp = method_getImplementation(originalForwardInvocationMethod);
+
 	Method myForwardInvocationMethod = class_getInstanceMethod([self class], @selector(forwardInvocationForRealObject:));
 	IMP myForwardInvocationImp = method_getImplementation(myForwardInvocationMethod);
 	const char *forwardInvocationTypes = method_getTypeEncoding(myForwardInvocationMethod);
     Class metaClass = objc_getMetaClass(class_getName(aClass));
-	class_replaceMethod(metaClass, @selector(forwardInvocation:), myForwardInvocationImp, forwardInvocationTypes);
+	class_replaceMethod(metaClass, forwardInvocationSel, myForwardInvocationImp, forwardInvocationTypes);
+
+    // Add an aliased method to save the original IMP
+    // so that we can reset forwardInvocation:'s implementation
+    // when we stop mocking.
+    NSString *aliasForwardInvocationName = [OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(forwardInvocationSel)];
+	SEL aliasForwardInvocationSel = NSSelectorFromString(aliasForwardInvocationName);
+	class_addMethod(aClass, aliasForwardInvocationSel, originalForwardInvocationImp, method_getTypeEncoding(originalForwardInvocationMethod));
 }
     
 - (void)setupForwarderForSelector:(SEL)selector

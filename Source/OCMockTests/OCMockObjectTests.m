@@ -432,7 +432,7 @@ static NSString *TestNotification = @"TestNotification";
 	[mock verify];
 }
 
-- (void)testForwardsToRealObjectWhenSetUpAndCalledOnClassMock {
+- (void)testForwardsToRealObjectWhenSetUpAndCalledOnClassObjectMock {
     mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
     
 	[[[mock expect] andForwardToRealObject] method1];
@@ -716,7 +716,7 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertEqualObjects(@"hi", [mock method1], @"Should have returned stubbed value");
 }
 
-- (void)testStubsMethodOnPartialClassMock
+- (void)testStubsMethodOnPartialClassObjectMock
 {
     mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
     
@@ -744,7 +744,7 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertEqualObjects(@"Foo", [mock method2], @"Should have returned value from real object.");
 }
 
-- (void)testForwardsUnstubbedMethodsCallsToRealObjectOnPartialClassMock
+- (void)testForwardsUnstubbedMethodsCallsToRealObjectOnPartialClassObjectMock
 {
     mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
     
@@ -792,13 +792,13 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertEqualObjects(@"Foo", [realObject method2], @"Should have 'unstubbed' method.");
 }
 
-- (void)testRestoresClassWhenStopped
+- (void)testRestoresClassObjectWhenStopped
 {
     mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
 	[[[mock stub] andReturn:@"TestFoo"] method1];
 	STAssertEqualObjects(@"TestFoo", [TestClassWithClassMethod method1], @"Should have stubbed method.");
     [mock stopMocking];
-	STAssertEqualObjects(@"Foo", [TestClassWithClassMethod method1], @"Should not 'unstubbed' method.");
+	STAssertEqualObjects(@"Foo", [TestClassWithClassMethod method1], @"Should have 'unstubbed' method.");
 }
 
 - (void)testCallsToSelfInRealObjectAreShadowedByPartialMock
