@@ -101,13 +101,26 @@ static NSMutableDictionary *mockTable;
     mockedClass = NULL;
 }
 
+// Route forwardInvocation: to ourselves so we get a chance
+// to handle recorded invocations on the mocked class.
 - (void)setupClass:(Class)aClass
 {
+    SEL forwardInvocationSel = @selector(forwardInvocation:);
+    Method originalForwardInvocationMethod = class_getInstanceMethod(aClass, forwardInvocationSel);
+    IMP originalForwardInvocationImp = method_getImplementation(originalForwardInvocationMethod);
+
 	Method myForwardInvocationMethod = class_getInstanceMethod([self class], @selector(forwardInvocationForRealObject:));
 	IMP myForwardInvocationImp = method_getImplementation(myForwardInvocationMethod);
 	const char *forwardInvocationTypes = method_getTypeEncoding(myForwardInvocationMethod);
     Class metaClass = objc_getMetaClass(class_getName(aClass));
-	class_replaceMethod(metaClass, @selector(forwardInvocation:), myForwardInvocationImp, forwardInvocationTypes);
+	class_replaceMethod(metaClass, forwardInvocationSel, myForwardInvocationImp, forwardInvocationTypes);
+
+    // Add an aliased method to save the original IMP
+    // so that we can reset forwardInvocation:'s implementation
+    // when we stop mocking.
+    NSString *aliasForwardInvocationName = [OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(forwardInvocationSel)];
+	SEL aliasForwardInvocationSel = NSSelectorFromString(aliasForwardInvocationName);
+	class_addMethod(aClass, aliasForwardInvocationSel, originalForwardInvocationImp, method_getTypeEncoding(originalForwardInvocationMethod));
 }
     
 - (void)setupForwarderForSelector:(SEL)selector
