@@ -168,17 +168,26 @@ static NSMutableDictionary *mockTable;
 
 #pragma mark - Proxy API
 
-// NOTE: We implement methodSignatureForSelector for the benefit of the mock recorder,
-// but not respondsToSelector:
-// partial class mocks do NOT respond to the instance-method selectors of the mocked class,
-// as they may not be used directly (see -realObject, above).
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
-{
-    return [_mockedClass instanceMethodSignatureForSelector:aSelector];
+// we report responding to the mocked class' instance-method selectors,
+// and return valid signatures for those methods, for the benefit of the framework
+// (e.g. the mock recorder),
+// but prevent direct use of the mock as an instance of the mocked class (see -realObject, above)
+// by overriding -forwardInvocation: to throw an exception.
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+    // we use the runtime here because we want the response of the mocked class itself,
+    // not, if it is a proxy, the response of the class it is proxying
+    return class_respondsToSelector(_mockedClass, aSelector);
 }
 
-// We also override forwardInvocation: to throw an exception rather than handling the invocation,
-// for the same reason as above.
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
+{
+    // we use the runtime here because we want the response of the mocked class itself,
+    // not, if it is a proxy, the response of the class it is proxying
+    Method method = class_getInstanceMethod(_mockedClass, aSelector);
+    return [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
+}
+
 - (void)forwardInvocation:(NSInvocation *)invocation
 {
     [NSException raise:NSInternalInconsistencyException
