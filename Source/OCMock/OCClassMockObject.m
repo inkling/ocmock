@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------------------
 
 #import "OCClassMockObject.h"
+#import <objc/runtime.h>
 
 
 @implementation OCClassMockObject
@@ -32,12 +33,17 @@
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
 {
-	return [mockedClass instanceMethodSignatureForSelector:aSelector];
+    // we use the runtime here because we want the response of the mocked class itself,
+    // not, if it is a proxy, the response of the class it is proxying
+    Method method = class_getInstanceMethod(mockedClass, aSelector);
+    return [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
 }
 
 - (BOOL)respondsToSelector:(SEL)selector
 {
-    return [mockedClass instancesRespondToSelector:selector];
+    // we use the runtime here because we want the response of the mocked class itself,
+    // not, if it is a proxy, the response of the class it is proxying
+    return class_respondsToSelector(mockedClass, selector);
 }
 
 @end

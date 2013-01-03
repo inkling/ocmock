@@ -90,6 +90,52 @@
 static NSString *TestNotification = @"TestNotification";
 
 
+@interface TestProxyClass : NSProxy
+
+- (instancetype)initWithObject:(id)object;
+- (NSString *)proxyMethod;
+
+@end
+
+@implementation TestProxyClass
+{
+    id _object;
+}
+
+- (instancetype)initWithObject:(id)object
+{
+    // no [super init], as we don't descend from NSObject
+    _object = [object retain];
+    return self;
+}
+
+- (void)dealloc {
+    [_object release];
+    [super dealloc];
+}
+
+- (NSString *)proxyMethod
+{
+    return @"foo";
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector
+{
+    return [_object respondsToSelector:aSelector];
+}
+
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel
+{
+    return [_object methodSignatureForSelector:sel];
+}
+
+- (void)forwardInvocation:(NSInvocation *)invocation
+{
+    [invocation invokeWithTarget:_object];
+}
+
+@end
+
 // --------------------------------------------------------------------------------------
 //  setup
 // --------------------------------------------------------------------------------------
@@ -991,6 +1037,24 @@ static NSString *TestNotification = @"TestNotification";
 	
 	STAssertNoThrow([[myMock expect] aSpecialMethod:"foo"], @"Should not complain about method with type qualifiers.");
 	STAssertNoThrow([myMock aSpecialMethod:"foo"], @"Should not complain about method with type qualifiers.");
+}
+
+// --------------------------------------------------------------------------------------
+//  proxies can be mocked too
+// --------------------------------------------------------------------------------------
+
+- (void)testMockForProxyClassAcceptsStubbedMethod
+{
+    id proxyMock = [OCMockObject mockForClass:[TestProxyClass class]];
+	[[proxyMock stub] initWithObject:[OCMArg any]];
+	[proxyMock initWithObject:nil];
+}
+
+- (void)testMockForProxyClassRaisesExceptionWhenUnknownMethodIsCalled
+{
+    id proxyMock = [OCMockObject mockForClass:[TestProxyClass class]];
+	[[proxyMock stub] initWithObject:[OCMArg any]];
+	STAssertThrows([mock proxyMethod], @"Should have raised an exception.");
 }
 
 
