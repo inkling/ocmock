@@ -1176,4 +1176,18 @@ static NSString *TestNotification = @"TestNotification";
 	[mock expect];
 }
 
+- (void)testForwardsToMockWhenSetUpAndCalledOnMock
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+	id partialMock = [OCMockObject partialMockForObject:foo];
+    id partialMockMock = [OCMockObject partialMockForObject:partialMock];
+
+	[[[partialMockMock expect] andForwardToRealObject] expect];
+    [[[partialMock expect] andForwardToRealObject] method1];
+    STAssertNoThrow([partialMockMock verify], @"Should have called -expect on real object.");
+
+    STAssertEqualObjects(@"Foo", [foo method1], @"Should have called method on real object.");
+    STAssertNoThrow([partialMock verify], @"Should have called method on real object.");
+}
+
 @end
