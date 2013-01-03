@@ -1057,6 +1057,84 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertThrows([mock proxyMethod], @"Should have raised an exception.");
 }
 
+- (void)testStubsMethodsOnPartialMockForProxy
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	[[[mock stub] andReturn:@"hi"] proxyMethod];
+	STAssertEqualObjects(@"hi", [mock proxyMethod], @"Should have returned stubbed value");
+}
+
+- (void)testStubsMethodOnProxyReference
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	[[[mock stub] andReturn:@"TestFoo"] proxyMethod];
+	STAssertEqualObjects(@"TestFoo", [fooProxy proxyMethod], @"Should have stubbed method.");
+}
+
+// This test is to show that partial mocks for proxies
+// can only stub methods defined on the proxies, not methods on the proxied objects.
+- (void)testCannotStubProxiedMethod
+{
+    TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	STAssertThrows([[mock stub] method1], @"Should have raised an exception.");
+    STAssertNoThrow([[mock stub] proxyMethod], @"Should not have raised an exception.");
+}
+
+- (void)testStubbingDoesNotDisturbProxying
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	[[mock stub] proxyMethod];
+
+    STAssertNoThrow([fooProxy method1], @"Should not complain about normal use of proxy.");
+    STAssertEqualObjects([fooProxy method1], @"Foo", @"Should return normal response of proxied object.");
+}
+
+- (void)testForwardsUnstubbedMethodsCallsToProxyOnPartialMock
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	STAssertEqualObjects(@"foo", [mock proxyMethod], @"Should have returned value from real object.");
+}
+
+- (void)testForwardsToProxyWhenSetUpAndCalledOnMock
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+
+	[[[mock stub] andForwardToRealObject] proxyMethod];
+	STAssertEquals(@"foo", [mock proxyMethod], @"Should have called method on real object.");
+}
+
+- (void)testForwardsToProxyWhenSetUpAndCalledOnProxy
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+
+	[[[mock expect] andForwardToRealObject] proxyMethod];
+	STAssertEquals(@"foo", [fooProxy proxyMethod], @"Should have called method on real object.");
+}
+
+- (void)testRestoresProxyWhenStopped
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	[[[mock stub] andReturn:@"TestFoo"] proxyMethod];
+	STAssertEqualObjects(@"TestFoo", [fooProxy proxyMethod], @"Should have stubbed method.");
+	[mock stopMocking];
+	STAssertEqualObjects(@"foo", [fooProxy proxyMethod], @"Should have 'unstubbed' method.");
+}
 
 // --------------------------------------------------------------------------------------
 //  some internal tests
