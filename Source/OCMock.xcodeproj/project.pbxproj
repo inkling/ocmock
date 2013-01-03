@@ -117,6 +117,10 @@
 		03E6F059152FA60B0079EAF7 /* OCPartialMockClassObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 03E6F056152FA60B0079EAF7 /* OCPartialMockClassObject.h */; };
 		03E6F05A152FA60B0079EAF7 /* OCPartialMockClassObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 03E6F057152FA60B0079EAF7 /* OCPartialMockClassObject.m */; };
 		03E6F05B152FA60B0079EAF7 /* OCPartialMockClassObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 03E6F057152FA60B0079EAF7 /* OCPartialMockClassObject.m */; };
+		F024BE49168CE46A00708350 /* OCMExpectationSequencer.h in Headers */ = {isa = PBXBuildFile; fileRef = F024BE47168CE46A00708350 /* OCMExpectationSequencer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F024BE4A168CE46A00708350 /* OCMExpectationSequencer.h in Headers */ = {isa = PBXBuildFile; fileRef = F024BE47168CE46A00708350 /* OCMExpectationSequencer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F024BE4B168CE46A00708350 /* OCMExpectationSequencer.m in Sources */ = {isa = PBXBuildFile; fileRef = F024BE48168CE46A00708350 /* OCMExpectationSequencer.m */; };
+		F024BE4C168CE46A00708350 /* OCMExpectationSequencer.m in Sources */ = {isa = PBXBuildFile; fileRef = F024BE48168CE46A00708350 /* OCMExpectationSequencer.m */; };
 		F04D5FE01547E14D009D1CBF /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F04D5FDF1547E14D009D1CBF /* SenTestingKit.framework */; };
 		F04D5FE21547E14D009D1CBF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F04D5FE11547E14D009D1CBF /* UIKit.framework */; };
 		F04D5FE41547E14D009D1CBF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F04D5FE31547E14D009D1CBF /* Foundation.framework */; };
@@ -221,6 +225,8 @@
 		03B3169014633FAB0052CD09 /* License.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = License.txt; sourceTree = "<group>"; };
 		03E6F056152FA60B0079EAF7 /* OCPartialMockClassObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCPartialMockClassObject.h; sourceTree = "<group>"; };
 		03E6F057152FA60B0079EAF7 /* OCPartialMockClassObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OCPartialMockClassObject.m; sourceTree = "<group>"; };
+		F024BE47168CE46A00708350 /* OCMExpectationSequencer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMExpectationSequencer.h; sourceTree = "<group>"; };
+		F024BE48168CE46A00708350 /* OCMExpectationSequencer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OCMExpectationSequencer.m; sourceTree = "<group>"; };
 		F04D5FDD1547E14D009D1CBF /* OCMockTestsTouch.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OCMockTestsTouch.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F04D5FDF1547E14D009D1CBF /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		F04D5FE11547E14D009D1CBF /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -319,6 +325,7 @@
 				030EF0B814632FD000B04273 /* OCMock.h */,
 				03B315841463334E0052CD09 /* Core Mocks */,
 				03B3161C1463348F0052CD09 /* Partial Mocks */,
+				F024BE45168CE43900708350 /* Expectation Sequencing */,
 				03B3161B146334530052CD09 /* Observer Mocks */,
 				03B3161A146334320052CD09 /* Argument Handling */,
 				03B31618146333CA0052CD09 /* Foundation Additions */,
@@ -501,6 +508,15 @@
 			name = "Invocation Handler";
 			sourceTree = "<group>";
 		};
+		F024BE45168CE43900708350 /* Expectation Sequencing */ = {
+			isa = PBXGroup;
+			children = (
+				F024BE47168CE46A00708350 /* OCMExpectationSequencer.h */,
+				F024BE48168CE46A00708350 /* OCMExpectationSequencer.m */,
+			);
+			name = "Expectation Sequencing";
+			sourceTree = "<group>";
+		};
 		F04D5FDE1547E14D009D1CBF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -564,6 +580,7 @@
 				03E6F058152FA60B0079EAF7 /* OCPartialMockClassObject.h in Headers */,
 				F081270E154F3EEF0083FD1A /* OCMockClassObject.h in Headers */,
 				F08B88571688D62100C4FE44 /* OCPartialClassMockObject.h in Headers */,
+				F024BE49168CE46A00708350 /* OCMExpectationSequencer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -602,6 +619,7 @@
 				03E6F059152FA60B0079EAF7 /* OCPartialMockClassObject.h in Headers */,
 				F081270F154F3EEF0083FD1A /* OCMockClassObject.h in Headers */,
 				F08B88581688D62100C4FE44 /* OCPartialClassMockObject.h in Headers */,
+				F024BE4A168CE46A00708350 /* OCMExpectationSequencer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -808,6 +826,7 @@
 				03E6F05A152FA60B0079EAF7 /* OCPartialMockClassObject.m in Sources */,
 				F0812710154F3EEF0083FD1A /* OCMockClassObject.m in Sources */,
 				F08B88591688D62100C4FE44 /* OCPartialClassMockObject.m in Sources */,
+				F024BE4B168CE46A00708350 /* OCMExpectationSequencer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -852,6 +871,7 @@
 				03E6F05B152FA60B0079EAF7 /* OCPartialMockClassObject.m in Sources */,
 				F0812711154F3EEF0083FD1A /* OCMockClassObject.m in Sources */,
 				F08B885B1688D62100C4FE44 /* OCPartialClassMockObject.m in Sources */,
+				F024BE4C168CE46A00708350 /* OCMExpectationSequencer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

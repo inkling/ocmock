@@ -673,6 +673,51 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertThrows([mock uppercaseString], @"Should have complained about wrong sequence.");
 }
 
+- (void)testAcceptsExpectedMethodsInRecordedSequenceOnMultipleObjects
+{
+    id mockOne = [OCMockObject mockForClass:[NSString class]];
+    id mockTwo = [OCMockObject mockForClass:[NSString class]];
+
+    OCMExpectationSequencer *sequencer = [OCMExpectationSequencer sequencerWithMocks:@[ mockOne, mockTwo ]];
+
+	[[mockOne expect] lowercaseString];
+	[[mockTwo expect] uppercaseString];
+
+    STAssertNoThrow([mockOne lowercaseString], @"Should have accepted expected method in sequence.");
+    STAssertNoThrow([mockTwo uppercaseString], @"Should have accepted expected method in sequence.");
+
+    STAssertNoThrow([sequencer verify], @"Should have verified sequence.");
+
+    // Note that it's still possible to verify individual mocks' expectations.
+    STAssertNoThrow([mockOne verify], @"Should have verified expectations.");
+}
+
+- (void)testRaisesExceptionWhenSequenceOnMultipleObjectsIsWrong
+{
+    id mockOne = [OCMockObject mockForClass:[NSString class]];
+    id mockTwo = [OCMockObject mockForClass:[NSString class]];
+
+    OCMExpectationSequencer *sequencer = [OCMExpectationSequencer sequencerWithMocks:@[ mockOne, mockTwo ]];
+    #pragma unused (sequencer)
+
+	[[mockOne expect] lowercaseString];
+	[[mockTwo expect] uppercaseString];
+
+	STAssertThrows([mock uppercaseString], @"Should have complained about wrong sequence.");
+}
+
+- (void)testRaisesAnExceptionWhenTryingToSimultaneouslySequenceMock
+{
+    id mockOne = [OCMockObject mockForClass:[NSString class]];
+    id mockTwo = [OCMockObject mockForClass:[NSString class]];
+    id mockThree = [OCMockObject mockForClass:[NSString class]];
+
+    OCMExpectationSequencer *sequencer = [OCMExpectationSequencer sequencerWithMocks:@[ mockOne, mockTwo ]];
+    #pragma unused (sequencer)
+
+    STAssertThrows([OCMExpectationSequencer sequencerWithMocks:(@[ mockTwo, mockThree ])],
+                   @"Should have raised an exception because mockTwo was going to be sequenced by two different sequencers.");
+}
 
 // --------------------------------------------------------------------------------------
 //	explicitly rejecting methods (mostly for nice mocks, see below)
@@ -686,6 +731,18 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertThrows([mock uppercaseString], @"Should have complained about rejected method being called.");
 }
 
+- (void)testThrowsWhenRejectedMethodIsCalledOnSequencedMocks
+{
+    id mockOne = [OCMockObject mockForClass:[NSString class]];
+    id mockTwo = [OCMockObject mockForClass:[NSString class]];
+    OCMExpectationSequencer *sequencer = [OCMExpectationSequencer sequencerWithMocks:@[ mockOne, mockTwo ]];
+
+	[[mockOne reject] uppercaseString];
+	STAssertThrows([mockOne uppercaseString], @"Should have complained about rejected method being called.");
+
+    STAssertThrows([mockOne verify], @"Should have reraised the exception.");
+    STAssertThrows([sequencer verify], @"Should have reraised the exception.");
+}
 
 // --------------------------------------------------------------------------------------
 //	protocol mocks
