@@ -25,6 +25,7 @@
 - (NSString *)method1;
 - (NSString *)method2;
 - (NSString *)method3:(NSString *)foo;
+- (void)method4:(SEL)foo;
 @end
 
 @implementation TestClassThatCallsSelf
@@ -42,6 +43,11 @@
 
 - (NSString *)method3:(NSString *)foo {
     return [foo uppercaseString];
+}
+
+- (void)method4:(SEL)foo
+{
+    
 }
 
 @end
@@ -647,9 +653,10 @@ static NSString *TestNotification = @"TestNotification";
 
 -(void)testAcceptsAndVerifiesMethodsWithSelectorArgument
 {
-	[[mock expect] performSelector:@selector(lowercaseString)];
-	[mock performSelector:@selector(lowercaseString)];
-	[mock verify];
+    id testMock = [OCMockObject mockForClass:[TestClassThatCallsSelf class]];
+    [[testMock expect] method4:@selector(lowercaseString)];
+    [testMock method4:@selector(lowercaseString)];
+    [testMock verify];
 }
 
 
