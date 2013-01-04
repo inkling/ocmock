@@ -659,6 +659,13 @@ static NSString *TestNotification = @"TestNotification";
     [testMock verify];
 }
 
+- (void)testAcceptsAndVerifiesMethodsWithAnySelectorArgument
+{
+    id testMock = [OCMockObject mockForClass:[TestClassThatCallsSelf class]];
+    [[testMock expect] method4:[OCMArg anySelector]];
+    [testMock method4:@selector(lowercaseString)];
+    [testMock verify];
+}
 
 // --------------------------------------------------------------------------------------
 //	ordered expectations
