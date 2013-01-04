@@ -21,6 +21,10 @@
 	return (void *)0x01234567;
 }
 
++ (SEL)anySelector {
+    return _cmd;
+}
+
 + (id)isNil
 {
 	return [OCMIsNilConstraint constraint];
@@ -67,6 +71,8 @@
 			return [OCMArg any];
 		if((pointer != NULL) && (object_getClass((id)pointer) == [OCMPassByRefSetter class]))
 			return (id)pointer;
+        if(pointer == @selector(anySelector))
+            return [OCMArg any];
 	}
 	return value;
 }
