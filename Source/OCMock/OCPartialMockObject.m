@@ -88,17 +88,52 @@ static NSMutableDictionary *mockTable;
 
 - (void)setupSubclassForObject:(id)anObject
 {
-	Class realClass = [anObject class];
-	double timestamp = [NSDate timeIntervalSinceReferenceDate];
-	const char *className = [[NSString stringWithFormat:@"%@-%p-%f", realClass, anObject, timestamp] UTF8String];
-	Class subclass = objc_allocateClassPair(realClass, className, 0);
-	objc_registerClassPair(subclass);
-	object_setClass(anObject, subclass);
-	
-	Method myForwardInvocationMethod = class_getInstanceMethod([self class], @selector(forwardInvocationForRealObject:));
-	IMP myForwardInvocationImp = method_getImplementation(myForwardInvocationMethod);
-	const char *forwardInvocationTypes = method_getTypeEncoding(myForwardInvocationMethod);
-	class_addMethod(subclass, @selector(forwardInvocation:), myForwardInvocationImp, forwardInvocationTypes);
+    Class realClass = [anObject class];
+
+    SEL methodSignatureSel = @selector(methodSignatureForSelector:);
+    Method realMethodSignatureMethod = class_getInstanceMethod(realClass, methodSignatureSel);
+    IMP realMethodSignatureImp = method_getImplementation(realMethodSignatureMethod);
+
+    SEL forwardInvocationSel = @selector(forwardInvocation:);
+    Method realForwardInvocationMethod = class_getInstanceMethod(realClass, forwardInvocationSel);
+    IMP realForwardInvocationImp = method_getImplementation(realForwardInvocationMethod);
+
+    // Make the mocked object an instance of a new subclass of its real class
+    // so that when we mock its methods we only affect it.
+    double timestamp = [NSDate timeIntervalSinceReferenceDate];
+    const char *className = [[NSString stringWithFormat:@"%@-%p-%f", realClass, anObject, timestamp] UTF8String];
+    Class subclass = objc_allocateClassPair(realClass, className, 0);
+    objc_registerClassPair(subclass);
+    object_setClass(anObject, subclass);
+
+    // Route -methodSignatureForSelector: to ourselves
+    // so that we'll provide an appropriate signature for a stubbed method
+    // that is invoked on the real object, even if the real object is a proxy
+    // (which would normally only provide signatures for methods of the object it was proxying).
+    Method myMethodSignatureMethod = class_getInstanceMethod([self class], @selector(methodSignatureForSelectorForRealObject:));
+    IMP myMethodSignatureImp = method_getImplementation(myMethodSignatureMethod);
+    const char *methodSignatureTypes = method_getTypeEncoding(myMethodSignatureMethod);
+    class_addMethod(subclass, methodSignatureSel, myMethodSignatureImp, methodSignatureTypes);
+
+    // Add an aliased method to save the real -methodSignatureForSelector: IMP
+    // so that we can allow the real object to provide signatures for some methods
+    // (see -methodSignatureForSelectorForRealObject:).
+    NSString *aliasMethodSignatureName = [OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(methodSignatureSel)];
+    SEL aliasMethodSignatureSel = NSSelectorFromString(aliasMethodSignatureName);
+    class_addMethod(subclass, aliasMethodSignatureSel, realMethodSignatureImp, method_getTypeEncoding(realMethodSignatureMethod));
+
+    // Route -forwardInvocation: to ourselves so we get a chance
+    // to handle recorded invocations on the mocked object.
+    Method myForwardInvocationMethod = class_getInstanceMethod([self class], @selector(forwardInvocationForRealObject:));
+    IMP myForwardInvocationImp = method_getImplementation(myForwardInvocationMethod);
+    const char *forwardInvocationTypes = method_getTypeEncoding(myForwardInvocationMethod);
+    class_addMethod(subclass, forwardInvocationSel, myForwardInvocationImp, forwardInvocationTypes);
+
+    // Add an aliased method to save the real -forwardInvocation: IMP
+    // so that we can allow the real object to handle forwardInvocation: if we don't.
+    NSString *aliasForwardInvocationName = [OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(forwardInvocationSel)];
+    SEL aliasForwardInvocationSel = NSSelectorFromString(aliasForwardInvocationName);
+    class_addMethod(subclass, aliasForwardInvocationSel, realForwardInvocationImp, method_getTypeEncoding(realForwardInvocationMethod));
 }
 
 - (void)setupForwarderForSelector:(SEL)selector
@@ -122,13 +157,49 @@ static NSMutableDictionary *mockTable;
 	class_addMethod(subclass, aliasSelector, originalImp, method_getTypeEncoding(originalMethod));
 }
 
+- (NSMethodSignature *)methodSignatureForSelectorForRealObject:(SEL)sel {
+	// in here "self" is a reference to the real object, not the mock
+
+    // if the real object is a proxy, we have to provide signatures
+    // for the proxy's methods--when the proxy itself is being mocked--
+    // and also allow the proxy to provide signatures for the methods that it's forwarding
+    if ([self isProxy]) {
+        // we'll first try to get a signature from the proxy itself,
+        // using the runtime to bypass its forwarding
+        Method method = class_getInstanceMethod(object_getClass(self), sel);
+        if (method) {
+            return [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
+        }
+    }
+
+    // if we're here the real object either isn't a proxy,
+    // or it's being asked for a signature for a method of the object it's proxying
+    // either way now we return its default response for -methodSignatureForSelector:
+    SEL methodSignatureSel = @selector(methodSignatureForSelector:);
+    NSString *aliasMethodSignatureName = [OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(methodSignatureSel)];
+    SEL aliasMethodSignatureSel = NSSelectorFromString(aliasMethodSignatureName);
+    return ((id(*)(id, SEL, SEL))objc_msgSend)(self, aliasMethodSignatureSel, sel);
+}
+
 - (void)forwardInvocationForRealObject:(NSInvocation *)anInvocation
 {
 	// in here "self" is a reference to the real object, not the mock
 	OCPartialMockObject *mock = [OCPartialMockObject existingPartialMockForObject:self];
-	if([mock handleInvocation:anInvocation] == NO)
-		[NSException raise:NSInternalInconsistencyException format:@"Ended up in subclass forwarder for %@ with unstubbed method %@",
-		 [self class], NSStringFromSelector([anInvocation selector])];
+	if([mock handleInvocation:anInvocation] == NO) {
+        // try to let the real object handle the invocation, if it says it can
+        // --it's possible that it would have done so
+        // if we hadn't overridden its forwardInvocation:
+        if ([self respondsToSelector:[anInvocation selector]]) {
+            SEL forwardInvocationSel = @selector(forwardInvocation:);
+            NSString *aliasForwardInvocationName = [OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(forwardInvocationSel)];
+            SEL aliasForwardInvocationSel = NSSelectorFromString(aliasForwardInvocationName);
+            [self performSelector:aliasForwardInvocationSel withObject:anInvocation];
+        } else {
+            // no one handled the invocation
+            [NSException raise:NSInternalInconsistencyException format:@"Ended up in subclass forwarder for %@ with unstubbed method %@",
+             [self class], NSStringFromSelector([anInvocation selector])];
+        }
+    }
 }
 
 

@@ -5,6 +5,7 @@
 
 #import <OCMock/OCMockObject.h>
 #import <OCMock/OCMockRecorder.h>
+#import <OCMock/OCMExpectationSequencer.h>
 #import <OCMock/OCMConstraint.h>
 #import <OCMock/OCMArg.h>
 #import <OCMock/NSNotificationCenter+OCMAdditions.h>

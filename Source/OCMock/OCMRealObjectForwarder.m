@@ -17,9 +17,14 @@
 	SEL aliasedSelector = NSSelectorFromString([OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(invocationSelector)]);
 	
 	[anInvocation setSelector:aliasedSelector];
-	if([invocationTarget isProxy] && (class_getInstanceMethod([invocationTarget class], @selector(realObject)))) 
+    // if the method has been invoked on a partial mock,
+    // and the method isn't one of the mock's own methods
+    // (as could be the case if the mock is itself being partially mocked)
+    // we need to change the target to the mock's real object
+    Class targetClass = object_getClass(invocationTarget);
+	if(class_conformsToProtocol(targetClass, @protocol(OCPartialMock)) &&
+       !class_respondsToSelector(targetClass, aliasedSelector))
 	{
-		// the method has been invoked on the mock, we need to change the target to the real object
 		[anInvocation setTarget:[(id<OCPartialMock>)invocationTarget realObject]];
 	} 
 	[anInvocation invoke];

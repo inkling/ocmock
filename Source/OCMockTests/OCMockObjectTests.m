@@ -90,6 +90,52 @@
 static NSString *TestNotification = @"TestNotification";
 
 
+@interface TestProxyClass : NSProxy
+
+- (instancetype)initWithObject:(id)object;
+- (NSString *)proxyMethod;
+
+@end
+
+@implementation TestProxyClass
+{
+    id _object;
+}
+
+- (instancetype)initWithObject:(id)object
+{
+    // no [super init], as we don't descend from NSObject
+    _object = [object retain];
+    return self;
+}
+
+- (void)dealloc {
+    [_object release];
+    [super dealloc];
+}
+
+- (NSString *)proxyMethod
+{
+    return @"foo";
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector
+{
+    return [_object respondsToSelector:aSelector];
+}
+
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel
+{
+    return [_object methodSignatureForSelector:sel];
+}
+
+- (void)forwardInvocation:(NSInvocation *)invocation
+{
+    [invocation invokeWithTarget:_object];
+}
+
+@end
+
 // --------------------------------------------------------------------------------------
 //  setup
 // --------------------------------------------------------------------------------------
@@ -627,6 +673,51 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertThrows([mock uppercaseString], @"Should have complained about wrong sequence.");
 }
 
+- (void)testAcceptsExpectedMethodsInRecordedSequenceOnMultipleObjects
+{
+    id mockOne = [OCMockObject mockForClass:[NSString class]];
+    id mockTwo = [OCMockObject mockForClass:[NSString class]];
+
+    OCMExpectationSequencer *sequencer = [OCMExpectationSequencer sequencerWithMocks:@[ mockOne, mockTwo ]];
+
+	[[mockOne expect] lowercaseString];
+	[[mockTwo expect] uppercaseString];
+
+    STAssertNoThrow([mockOne lowercaseString], @"Should have accepted expected method in sequence.");
+    STAssertNoThrow([mockTwo uppercaseString], @"Should have accepted expected method in sequence.");
+
+    STAssertNoThrow([sequencer verify], @"Should have verified sequence.");
+
+    // Note that it's still possible to verify individual mocks' expectations.
+    STAssertNoThrow([mockOne verify], @"Should have verified expectations.");
+}
+
+- (void)testRaisesExceptionWhenSequenceOnMultipleObjectsIsWrong
+{
+    id mockOne = [OCMockObject mockForClass:[NSString class]];
+    id mockTwo = [OCMockObject mockForClass:[NSString class]];
+
+    OCMExpectationSequencer *sequencer = [OCMExpectationSequencer sequencerWithMocks:@[ mockOne, mockTwo ]];
+    #pragma unused (sequencer)
+
+	[[mockOne expect] lowercaseString];
+	[[mockTwo expect] uppercaseString];
+
+	STAssertThrows([mock uppercaseString], @"Should have complained about wrong sequence.");
+}
+
+- (void)testRaisesAnExceptionWhenTryingToSimultaneouslySequenceMock
+{
+    id mockOne = [OCMockObject mockForClass:[NSString class]];
+    id mockTwo = [OCMockObject mockForClass:[NSString class]];
+    id mockThree = [OCMockObject mockForClass:[NSString class]];
+
+    OCMExpectationSequencer *sequencer = [OCMExpectationSequencer sequencerWithMocks:@[ mockOne, mockTwo ]];
+    #pragma unused (sequencer)
+
+    STAssertThrows([OCMExpectationSequencer sequencerWithMocks:(@[ mockTwo, mockThree ])],
+                   @"Should have raised an exception because mockTwo was going to be sequenced by two different sequencers.");
+}
 
 // --------------------------------------------------------------------------------------
 //	explicitly rejecting methods (mostly for nice mocks, see below)
@@ -640,6 +731,18 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertThrows([mock uppercaseString], @"Should have complained about rejected method being called.");
 }
 
+- (void)testThrowsWhenRejectedMethodIsCalledOnSequencedMocks
+{
+    id mockOne = [OCMockObject mockForClass:[NSString class]];
+    id mockTwo = [OCMockObject mockForClass:[NSString class]];
+    OCMExpectationSequencer *sequencer = [OCMExpectationSequencer sequencerWithMocks:@[ mockOne, mockTwo ]];
+
+	[[mockOne reject] uppercaseString];
+	STAssertThrows([mockOne uppercaseString], @"Should have complained about rejected method being called.");
+
+    STAssertThrows([mockOne verify], @"Should have reraised the exception.");
+    STAssertThrows([sequencer verify], @"Should have reraised the exception.");
+}
 
 // --------------------------------------------------------------------------------------
 //	protocol mocks
@@ -993,6 +1096,102 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertNoThrow([myMock aSpecialMethod:"foo"], @"Should not complain about method with type qualifiers.");
 }
 
+// --------------------------------------------------------------------------------------
+//  proxies can be mocked too
+// --------------------------------------------------------------------------------------
+
+- (void)testMockForProxyClassAcceptsStubbedMethod
+{
+    id proxyMock = [OCMockObject mockForClass:[TestProxyClass class]];
+	[[proxyMock stub] initWithObject:[OCMArg any]];
+	[proxyMock initWithObject:nil];
+}
+
+- (void)testMockForProxyClassRaisesExceptionWhenUnknownMethodIsCalled
+{
+    id proxyMock = [OCMockObject mockForClass:[TestProxyClass class]];
+	[[proxyMock stub] initWithObject:[OCMArg any]];
+	STAssertThrows([mock proxyMethod], @"Should have raised an exception.");
+}
+
+- (void)testStubsMethodsOnPartialMockForProxy
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	[[[mock stub] andReturn:@"hi"] proxyMethod];
+	STAssertEqualObjects(@"hi", [mock proxyMethod], @"Should have returned stubbed value");
+}
+
+- (void)testStubsMethodOnProxyReference
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	[[[mock stub] andReturn:@"TestFoo"] proxyMethod];
+	STAssertEqualObjects(@"TestFoo", [fooProxy proxyMethod], @"Should have stubbed method.");
+}
+
+// This test is to show that partial mocks for proxies
+// can only stub methods defined on the proxies, not methods on the proxied objects.
+- (void)testCannotStubProxiedMethod
+{
+    TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	STAssertThrows([[mock stub] method1], @"Should have raised an exception.");
+    STAssertNoThrow([[mock stub] proxyMethod], @"Should not have raised an exception.");
+}
+
+- (void)testStubbingDoesNotDisturbProxying
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	[[mock stub] proxyMethod];
+
+    STAssertNoThrow([fooProxy method1], @"Should not complain about normal use of proxy.");
+    STAssertEqualObjects([fooProxy method1], @"Foo", @"Should return normal response of proxied object.");
+}
+
+- (void)testForwardsUnstubbedMethodsCallsToProxyOnPartialMock
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	STAssertEqualObjects(@"foo", [mock proxyMethod], @"Should have returned value from real object.");
+}
+
+- (void)testForwardsToProxyWhenSetUpAndCalledOnMock
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+
+	[[[mock stub] andForwardToRealObject] proxyMethod];
+	STAssertEquals(@"foo", [mock proxyMethod], @"Should have called method on real object.");
+}
+
+- (void)testForwardsToProxyWhenSetUpAndCalledOnProxy
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+
+	[[[mock expect] andForwardToRealObject] proxyMethod];
+	STAssertEquals(@"foo", [fooProxy proxyMethod], @"Should have called method on real object.");
+}
+
+- (void)testRestoresProxyWhenStopped
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+    id fooProxy = [[[TestProxyClass alloc] initWithObject:foo] autorelease];
+	mock = [OCMockObject partialMockForObject:fooProxy];
+	[[[mock stub] andReturn:@"TestFoo"] proxyMethod];
+	STAssertEqualObjects(@"TestFoo", [fooProxy proxyMethod], @"Should have stubbed method.");
+	[mock stopMocking];
+	STAssertEqualObjects(@"foo", [fooProxy proxyMethod], @"Should have 'unstubbed' method.");
+}
 
 // --------------------------------------------------------------------------------------
 //  some internal tests
@@ -1032,6 +1231,20 @@ static NSString *TestNotification = @"TestNotification";
 	[[mock expect] lowercaseString];
 	[mock lowercaseString];
 	[mock expect];
+}
+
+- (void)testForwardsToMockWhenSetUpAndCalledOnMock
+{
+	TestClassThatCallsSelf *foo = [[[TestClassThatCallsSelf alloc] init] autorelease];
+	id partialMock = [OCMockObject partialMockForObject:foo];
+    id partialMockMock = [OCMockObject partialMockForObject:partialMock];
+
+	[[[partialMockMock expect] andForwardToRealObject] expect];
+    [[[partialMock expect] andForwardToRealObject] method1];
+    STAssertNoThrow([partialMockMock verify], @"Should have called -expect on real object.");
+
+    STAssertEqualObjects(@"Foo", [foo method1], @"Should have called method on real object.");
+    STAssertNoThrow([partialMock verify], @"Should have called method on real object.");
 }
 
 @end
