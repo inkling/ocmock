@@ -186,14 +186,26 @@ static NSMutableDictionary *mockTable;
 	// in here "self" is a reference to the real object, not the mock
 	OCPartialMockObject *mock = [OCPartialMockObject existingPartialMockForObject:self];
 	if([mock handleInvocation:anInvocation] == NO) {
-        // try to let the real object handle the invocation, if it says it can
-        // --it's possible that it would have done so
-        // if we hadn't overridden its forwardInvocation:
-        if ([self respondsToSelector:[anInvocation selector]]) {
+        SEL invocationSelector = [anInvocation selector];
+        
+        // try to let the real object handle the invocation, if it says it can.
+        // two cases:
+        //  1. this is a method of the real object (which we stubbed, but didn't handle
+        //     because e.g. the arguments didn't match)
+        if (class_respondsToSelector(object_getClass(self), invocationSelector)) {
+            NSString *aliasInvocationName = [OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(invocationSelector)];
+            SEL aliasInvocationSelector = NSSelectorFromString(aliasInvocationName);
+            [anInvocation setSelector:aliasInvocationSelector];
+            [anInvocation invokeWithTarget:self];
+
+        //  2. this a method the real object would have forwarded if we hadn't overridden
+        //     its forwardInvocation:
+        } else if ([self methodSignatureForSelector:invocationSelector]) {
             SEL forwardInvocationSel = @selector(forwardInvocation:);
             NSString *aliasForwardInvocationName = [OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(forwardInvocationSel)];
             SEL aliasForwardInvocationSel = NSSelectorFromString(aliasForwardInvocationName);
             [self performSelector:aliasForwardInvocationSel withObject:anInvocation];
+            
         } else {
             // no one handled the invocation
             [NSException raise:NSInternalInconsistencyException format:@"Ended up in subclass forwarder for %@ with unstubbed method %@",
