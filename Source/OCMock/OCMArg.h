@@ -11,6 +11,7 @@
 
 + (id)any;
 + (void *)anyPointer;
++ (SEL)anySelector;
 + (id)isNil;
 + (id)isNotNil;
 + (id)isNotEqual:(id)value;

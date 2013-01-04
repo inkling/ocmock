@@ -32,7 +32,7 @@
  		{
  			SEL s = (SEL)0;
  			[self getArgument:&s atIndex:argIndex];
- 			id value = NSStringFromSelector(s);
+ 			id value = [NSValue valueWithPointer:s];
  			return value;
  		}
 		case 'i': 
