@@ -74,6 +74,19 @@
 @end
 
 
+@interface TestClassWithDynamicProperties : NSObject
+
+@property (nonatomic, readwrite, strong)    NSString *readwriteProperty;
+@property (nonatomic, readwrite, strong, setter = customSetReadwriteProperty:) NSString *readwritePropertyWithCustomSetter;
+@property (nonatomic, readonly)             NSString *readonlyProperty;
+
+@end
+
+@implementation TestClassWithDynamicProperties
+@dynamic readwriteProperty, readwritePropertyWithCustomSetter, readonlyProperty;
+@end
+
+
 @interface TestObserver	: NSObject
 {
 	@public
@@ -345,6 +358,19 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertThrows([mock stringByAppendingString:expectedArg], @"Should have raised an exception.");	
 }
 
+- (void)testAcceptsStubbedMethodForDynamicProperty
+{
+    mock = [OCMockObject mockForClass:[TestClassWithDynamicProperties class]];
+    [[mock stub] readonlyProperty];
+    [mock readonlyProperty];
+}
+
+- (void)testAcceptsStubbedMethodForDynamicPropertyWithCustomMethod
+{
+    mock = [OCMockObject mockForClass:[TestClassWithDynamicProperties class]];
+    [[mock stub] customSetReadwriteProperty:OCMOCK_ANY];
+    [mock customSetReadwriteProperty:@"Foo"];
+}
 
 // --------------------------------------------------------------------------------------
 //	returning values from stubbed methods
@@ -385,6 +411,13 @@ static NSString *TestNotification = @"TestNotification";
 	id returnValue = [mock uppercaseString];
 	
 	STAssertNil(returnValue, @"Should have returned stubbed value, which is nil.");
+}
+
+- (void)testReturnsStubbedReturnValueFromGetterForDynamicProperty
+{
+    mock = [OCMockObject mockForClass:[TestClassWithDynamicProperties class]];
+    [[[mock stub] andReturn:@"foo"] readwriteProperty];
+    STAssertEqualObjects(@"foo", [mock readwriteProperty], @"Should have returned stubbed value.");
 }
 
 
@@ -1093,6 +1126,12 @@ static NSString *TestNotification = @"TestNotification";
 - (void)testDoesNotRespondToInvalidSelector
 {
 	STAssertFalse([mock respondsToSelector:@selector(fooBar)], nil);
+}
+
+- (void)testRespondsToSelectorForDynamicPropertyMethod {
+    mock = [OCMockObject mockForClass:[TestClassWithDynamicProperties class]];
+    STAssertTrue([mock respondsToSelector:@selector(readwriteProperty)],
+                 @"Mock should have responded to selector.");
 }
 
 - (void)testCanStubValueForKeyMethod
