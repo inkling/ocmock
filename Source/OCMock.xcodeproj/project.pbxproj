@@ -1004,6 +1004,7 @@
 		030EF0D314632FD000B04273 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
@@ -1023,6 +1024,7 @@
 		030EF0D414632FD000B04273 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
@@ -1042,6 +1044,7 @@
 		030EF0D614632FD000B04273 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(TARGET_BUILD_DIR)/Frameworks\"",
 					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
@@ -1063,6 +1066,7 @@
 		030EF0D714632FD000B04273 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"${TARGET_BUILD_DIR}/Frameworks\"",
 					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
