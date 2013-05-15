@@ -57,6 +57,7 @@
 
 + (NSString *)method1;
 + (NSString *)method2;
++ (NSString *)method3:(NSString *)foo;
 
 @end
 
@@ -69,6 +70,10 @@
 
 + (NSString *)method2 {
     return [self method1];
+}
+
++ (NSString *)method3:(NSString *)foo {
+    return [foo uppercaseString];
 }
 
 @end
@@ -1314,6 +1319,26 @@ static NSString *TestNotification = @"TestNotification";
 
     STAssertNoThrow([foo method3:@"baz"], @"Should not have thrown an exception.");
     STAssertEqualObjects(@"BAZ", [foo method3:@"baz"], @"Should have called method on real object.");
+}
+
+- (void)testForwardsStubbedButNonmatchingMethodCallsToRealObjectWhenSetUpAndCalledOnMockClassObject {
+	mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
+    [[[mock stub] andReturn:@"BAR"] method3:@"foo"];
+
+    STAssertEqualObjects(@"BAR", [mock method3:@"foo"], @"Should have stubbed method.");
+
+    STAssertNoThrow([mock method3:@"baz"], @"Should not have thrown an exception.");
+    STAssertEqualObjects(@"BAZ", [mock method3:@"baz"], @"Should have called method on real object.");
+}
+
+- (void)testForwardsStubbedButNonmatchingMethodCallsToRealObjectWhenSetUpAndCalledOnRealClass {
+	mock = [OCMockObject partialMockForClassObject:[TestClassWithClassMethod class]];
+    [[[mock stub] andReturn:@"BAR"] method3:@"foo"];
+
+    STAssertEqualObjects(@"BAR", [TestClassWithClassMethod method3:@"foo"], @"Should have stubbed method.");
+
+    STAssertNoThrow([TestClassWithClassMethod method3:@"baz"], @"Should not have thrown an exception.");
+    STAssertEqualObjects(@"BAZ", [TestClassWithClassMethod method3:@"baz"], @"Should have called method on real object.");
 }
 
 - (void)testForwardsStubbedButNonmatchingMethodCallsToRealObjectWhenSetUpAndCalledOnInstance
