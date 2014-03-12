@@ -132,11 +132,15 @@ static NSMutableDictionary *mockTable;
     // We must wish to handle invocations of selector ourselves,
     // which we do by replacing the originalMethod's implementation
     // with the runtime forwarding function _objc_msgForward(_stret).
+#if defined(__LP64__) && __LP64__
+    IMP forwarderImp = _objc_msgForward;
+#else 
     char *methodReturnType = method_copyReturnType(originalMethod);
     BOOL methodReturnsStruct = (methodReturnType && (strlen(methodReturnType) > 0) && methodReturnType[0] == '{');
     free(methodReturnType);
     IMP forwarderImp = (methodReturnsStruct ? (IMP)_objc_msgForward_stret : (IMP)_objc_msgForward);
-	class_replaceMethod(metaClass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
+#endif
+    class_replaceMethod(metaClass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod));
     
     // We add an aliased method to save the original IMP 
     // so that methods can be forwarded to the class object
