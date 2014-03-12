@@ -570,7 +570,7 @@ static NSString *TestNotification = @"TestNotification";
 
 - (void)testReturnsValuesInPassByReferenceArguments
 {
-	NSString *expectedName = [NSString stringWithString:@"Test"];
+	NSString *expectedName = @"Test";
 	NSArray *expectedArray = [NSArray array];
 	
 	[[mock expect] completePathIntoString:[OCMArg setTo:expectedName] caseSensitive:YES 

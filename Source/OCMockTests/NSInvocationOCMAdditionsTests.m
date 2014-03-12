@@ -42,7 +42,7 @@
 	NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
 	[invocation setSelector:selector];
 	// Give it one argument (starts at index 2)
-	NSString *argument = [NSString stringWithString:TestString];
+	NSString *argument = TestString;
 	[invocation setArgument:&argument atIndex:2];
 	
 	NSString *expected = [NSString stringWithFormat:@"isEqualToString:@\"%@\"", TestString];
@@ -57,7 +57,7 @@
 	[invocation setSelector:selector];
 	// Give it two arguments
 	NSNumber *argumentOne = [NSNumber numberWithInt:TestInt];
-	NSString *argumentTwo = [NSString stringWithString:TestString];
+	NSString *argumentTwo = TestString;
 	[invocation setArgument:&argumentOne atIndex:2];
 	[invocation setArgument:&argumentTwo atIndex:3];
 	
