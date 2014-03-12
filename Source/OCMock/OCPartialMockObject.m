@@ -147,11 +147,15 @@ static NSMutableDictionary *mockTable;
     // By using _objc_msgForward(_stret), we cause messages to be routed 
     // to forwardInvocation: (and thus forwardInvocationForRealObject:, 
     // from above) with a nicely packaged invocation.
+#if defined(__LP64__) && __LP64__
+    IMP forwarderImp = _objc_msgForward;
+#else
     char *methodReturnType = method_copyReturnType(originalMethod);
     BOOL methodReturnsStruct = (methodReturnType && (strlen(methodReturnType) > 0) && methodReturnType[0] == '{');
     free(methodReturnType);
     IMP forwarderImp = (methodReturnsStruct ? (IMP)_objc_msgForward_stret : (IMP)_objc_msgForward);
-	class_addMethod(subclass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod)); 
+#endif
+	class_addMethod(subclass, method_getName(originalMethod), forwarderImp, method_getTypeEncoding(originalMethod));
 
 	SEL aliasSelector = NSSelectorFromString([OCMRealMethodAliasPrefix stringByAppendingString:NSStringFromSelector(selector)]);
 	class_addMethod(subclass, aliasSelector, originalImp, method_getTypeEncoding(originalMethod));
