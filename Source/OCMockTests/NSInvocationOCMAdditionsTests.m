@@ -189,7 +189,7 @@
 	long argumentOne = 1;
 	[invocation setArgument:&argumentOne atIndex:2];
 	
-	NSString *expected = [NSString stringWithFormat:@"initWithLong:%d", argumentOne];
+	NSString *expected = [NSString stringWithFormat:@"initWithLong:%ld", argumentOne];
 	STAssertEqualObjects(expected, [invocation invocationDescription], @"");
 }
 
@@ -203,7 +203,7 @@
 	unsigned long argumentOne = 1;
 	[invocation setArgument:&argumentOne atIndex:2];
 	
-	NSString *expected = [NSString stringWithFormat:@"initWithUnsignedLong:%u", argumentOne];
+	NSString *expected = [NSString stringWithFormat:@"initWithUnsignedLong:%lu", argumentOne];
 	STAssertEqualObjects(expected, [invocation invocationDescription], @"");
 }
 
@@ -323,7 +323,7 @@
 	[invocation setArgument:&length atIndex:3];
 	
 	NSString *expected1 = [NSString stringWithFormat:@"initWithBytes:"];
-	NSString *expected2 = [NSString stringWithFormat:@"length:%d", length];
+	NSString *expected2 = [NSString stringWithFormat:@"length:%lu", (unsigned long)length];
 	NSString *invocationDescription = [invocation invocationDescription];
 	STAssertTrue([invocationDescription rangeOfString:expected1].length > 0, @"");
 	STAssertTrue([invocationDescription rangeOfString:expected2].length > 0, @"");

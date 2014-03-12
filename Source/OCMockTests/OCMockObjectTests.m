@@ -468,7 +468,7 @@ static NSString *TestNotification = @"TestNotification";
 
 - (NSString *)valueForString:(NSString *)aString andMask:(NSStringCompareOptions)mask
 {
-	return [NSString stringWithFormat:@"[%@, %d]", aString, mask];
+	return [NSString stringWithFormat:@"[%@, %lu]", aString, (unsigned long)mask];
 }
 
 - (void)testCallsAlternativeMethodAndPassesOriginalArgumentsAndReturnsValue
