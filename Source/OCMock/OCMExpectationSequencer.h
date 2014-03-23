@@ -28,7 +28,7 @@
 
  @warning A mock may participate in only one sequence at a time.
 
- @param An array of mocks to sequence.
+ @param mocks An array of mocks to sequence.
  @return A sequencer for the given mocks.
  */
 + (instancetype)sequencerWithMocks:(NSArray *)mocks;
