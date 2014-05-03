@@ -21,6 +21,11 @@
 	return (void *)0x01234567;
 }
 
++ (char *)anyCString
+{
+    return "1234567";
+}
+
 + (SEL)anySelector {
     return _cmd;
 }
@@ -69,6 +74,8 @@
 		void *pointer = [value pointerValue];
 		if(pointer == (void *)0x01234567)
 			return [OCMArg any];
+        if((pointer != NULL) && strcmp(pointer, "1234567") == 0) // Potentially unsafe because strcmp() will read 8 bytes from an unknown address, but
+            return [OCMArg any];                                 // pointers returned by Apple's malloc() should work because they are 16-byte aligned.
 		if((pointer != NULL) && (object_getClass((id)pointer) == [OCMPassByRefSetter class]))
 			return (id)pointer;
         if(pointer == @selector(anySelector))

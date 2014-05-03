@@ -11,6 +11,7 @@
 
 + (id)any;
 + (void *)anyPointer;
++ (char *)anyCString;
 + (SEL)anySelector;
 + (id)isNil;
 + (id)isNotNil;
