@@ -163,7 +163,7 @@ static NSMutableDictionary *mockTable;
     // which we do by replacing the originalMethod's implementation
     // with the runtime forwarding function _objc_msgForward(_stret).
     // We will receive the invocations because we route forwardInvocation: to ourselves above.
-#if defined(__LP64__) && __LP64__
+#if defined(__arm64__)
     IMP forwarderImp = _objc_msgForward;
 #else
     char *methodReturnType = method_copyReturnType(originalMethod);

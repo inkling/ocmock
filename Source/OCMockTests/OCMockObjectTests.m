@@ -401,12 +401,19 @@ static NSString *TestNotification = @"TestNotification";
 	STAssertEquals(expectedValue, returnValue, @"Should have returned stubbed value.");
 }
 
-- (void)testRaisesWhenBoxedValueTypesDoNotMatch
+- (void)testRaisesWhenBoxedValueTypesDoNotMatchAndAreNotCompatible
+{
+	[[[mock stub] andReturnValue:[NSValue valueWithRange:NSMakeRange(0, 0)]] intValue];
+
+	STAssertThrows([mock intValue], @"Should have raised an exception.");
+}
+
+- (void)testDoesNotRaiseWhenBoxedValueTypesDoNotMatchButAreCompatible
 {
     double expectedValue = 42;
-	[[[mock stub] andReturnValue:OCMOCK_VALUE(expectedValue)] intValue];
-    
-	STAssertThrows([mock intValue], @"Should have raised an exception.");
+    [[[mock stub] andReturnValue:OCMOCK_VALUE(expectedValue)] intValue];
+
+    STAssertNoThrow([mock intValue], @"Should have raised an exception.");
 }
 
 - (void)testReturnsStubbedNilReturnValue
