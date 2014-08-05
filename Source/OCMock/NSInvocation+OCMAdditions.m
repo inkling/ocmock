@@ -167,6 +167,7 @@
 	switch(*argType)
 	{
 		case '@':	return [self objectDescriptionAtIndex:argIndex];
+		case 'B':	return [self boolDescriptionAtIndex:argIndex];
 		case 'c':	return [self charDescriptionAtIndex:argIndex];
 		case 'C':	return [self unsignedCharDescriptionAtIndex:argIndex];
 		case 'i':	return [self intDescriptionAtIndex:argIndex];
@@ -201,6 +202,13 @@
 		return [NSString stringWithFormat:@"@\"%@\"", [object description]];
 	else
 		return [object description];
+}
+
+- (NSString *)boolDescriptionAtIndex:(int)anInt
+{
+	bool value;
+	[self getArgument:&value atIndex:anInt];
+	return value? @"YES" : @"NO";
 }
 
 - (NSString *)charDescriptionAtIndex:(int)anInt
