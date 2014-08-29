@@ -1154,6 +1154,10 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "OCMockTestsTouch/OCMockTestsTouch-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"SENTEST_IGNORE_DEPRECATION_WARNING=1",
+				);
 				GCC_WARN_UNDECLARED_SELECTOR = NO;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				INFOPLIST_FILE = "OCMockTestsTouch/OCMockTestsTouch-Info.plist";
@@ -1178,6 +1182,10 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "OCMockTestsTouch/OCMockTestsTouch-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"SENTEST_IGNORE_DEPRECATION_WARNING=1",
+				);
 				GCC_WARN_UNDECLARED_SELECTOR = NO;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				INFOPLIST_FILE = "OCMockTestsTouch/OCMockTestsTouch-Info.plist";
