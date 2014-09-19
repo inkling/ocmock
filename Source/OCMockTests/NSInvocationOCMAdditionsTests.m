@@ -323,7 +323,7 @@
 	[invocation setArgument:&length atIndex:3];
 	
 	NSString *expected1 = [NSString stringWithFormat:@"initWithBytes:"];
-	NSString *expected2 = [NSString stringWithFormat:@"length:%lu", (unsigned long)length];
+	NSString *expected2 = [NSString stringWithFormat:@"length:%tu", length];
 	NSString *invocationDescription = [invocation invocationDescription];
 	STAssertTrue([invocationDescription rangeOfString:expected1].length > 0, @"");
 	STAssertTrue([invocationDescription rangeOfString:expected2].length > 0, @"");
