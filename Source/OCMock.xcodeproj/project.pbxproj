@@ -688,7 +688,7 @@
 			name = OCMockTests;
 			productName = OCMockTests;
 			productReference = 030EF0C014632FD000B04273 /* OCMockTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productType = "com.apple.product-type.bundle.ocunit-test";
 		};
 		030EF0DB14632FF700B04273 /* OCMockLib */ = {
 			isa = PBXNativeTarget;
@@ -723,7 +723,7 @@
 			name = OCMockTestsTouch;
 			productName = OCMockTestsTouch;
 			productReference = F04D5FDD1547E14D009D1CBF /* OCMockTestsTouch.octest */;
-			productType = "com.apple.product-type.bundle";
+			productType = "com.apple.product-type.bundle.ocunit-test";
 		};
 /* End PBXNativeTarget section */
 
