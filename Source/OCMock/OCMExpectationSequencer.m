@@ -139,7 +139,7 @@ static NSMutableDictionary *__sequencerTable;
         id partialMockForMock = [[[OCPartialMockObject alloc] initWithObject:mock] autorelease];
 
         // set up expectation and rejection tracking on sequenced mocks
-        OCMExpectationSequencer *__block __weak weakSelf = self;
+        OCMExpectationSequencer *__block __unsafe_unretained weakSelf = self;
         // forward to real object first, so that we can retrieve the returned recorder
         [[[[partialMockForMock stub] andForwardToRealObject] andDo:^(NSInvocation *invocation) {
             OCMockRecorder *recorder;
