@@ -433,7 +433,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0640;
-				LastUpgradeCheck = 0930;
+				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "Mulle Kybernetik";
 				TargetAttributes = {
 					E6E7AF9E1B8FBEAE007DED93 = {
